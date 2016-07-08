@@ -32,6 +32,10 @@ class AnnotationBearTest(unittest.TestCase):
             self.assertEqual(result[0].contents['strings'], compare)
             self.assertEqual(result[0].contents['comments'], ())
 
+        text = ["a'\n", "b'\n"]
+        with execute_bear(self.python_uut, "F", text) as result:
+            self.assertEqual(result[0].message, "' has no closure")
+
     def test_multiline_string(self):
         text = ["'''multiline string, #comment within it'''\n"]
         compare = (SourceRange.from_absolute_position(
@@ -77,6 +81,7 @@ class AnnotationBearTest(unittest.TestCase):
                                 AbsolutePosition(text, comment_start),
                                 AbsolutePosition(text, comment_end)),)]
         with execute_bear(self.python_uut, "F", text) as result:
+            print(result[0].affected_code)
             self.assertEqual(result[0].contents['strings'], compare[0])
             self.assertEqual(result[0].contents['comments'], compare[1])
 
@@ -110,6 +115,9 @@ class AnnotationBearTest(unittest.TestCase):
                                     AbsolutePosition(file_text, string3_start),
                                     AbsolutePosition(file_text, string3_end))
         with execute_bear(self.python_uut, "F", file_text) as results:
+            for comment in results[0].contents["comments"]:
+                print("start: ", comment.start.line, comment.start.column)
+                print("end: ". comment.end.line, comment.end.column)
             self.assertIn(string1, results[0].contents['strings'])
             self.assertIn(string2, results[0].contents['strings'])
             self.assertIn(string3, results[0].contents['strings'])
